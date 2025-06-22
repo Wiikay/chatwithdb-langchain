@@ -15,6 +15,60 @@ A powerful conversational interface for querying telecom database using natural 
 
 The application includes a comprehensive telecom database with the following tables:
 
+### Entity Relationship Diagram
+
+```mermaid
+erDiagram
+    customers ||--o{ call_records : "has"
+    customers ||--o{ data_usage : "has"
+    customers ||--o{ billing : "has"
+    
+    customers {
+        int customer_id PK
+        string first_name
+        string last_name
+        string phone_number UK
+        string email
+        string address
+        string city
+        string state
+        string zip_code
+        string plan_type
+        real monthly_fee
+        date registration_date
+        string status
+    }
+    
+    call_records {
+        int call_id PK
+        int customer_id FK
+        string receiver_number
+        int call_duration
+        string call_type
+        datetime call_date
+        real cost
+    }
+    
+    data_usage {
+        int usage_id PK
+        int customer_id FK
+        date usage_date
+        real data_used_mb
+        string data_type
+        real cost
+    }
+    
+    billing {
+        int bill_id PK
+        int customer_id FK
+        date bill_date
+        date due_date
+        real amount
+        string payment_status
+        date payment_date
+    }
+```
+
 ### Customers
 - Customer information (name, contact, address)
 - Plan types (Basic, Premium, Family, Business, Student)
@@ -117,6 +171,52 @@ chatwithdb-langchain/
 ```
 
 ## 🛠️ Technical Architecture
+
+### System Architecture Diagram
+
+```mermaid
+flowchart TD
+    A[User] -->|Natural Language Query| B[Streamlit Web Interface]
+    B --> C[LangGraph React Agent]
+    C --> D[Google Gemini 2.0 LLM]
+    C --> E[SQLDatabaseToolkit]
+    E --> F[LangChain SQLDatabase]
+    F --> G[SQLAlchemy Engine]
+    G --> H[SQLite Database]
+    
+    H -->|Query Results| G
+    G -->|Formatted Data| F
+    F -->|Structured Response| E
+    E -->|SQL Results| C
+    D -->|NL Understanding| C
+    C -->|AI Response| B
+    B -->|Formatted Answer| A
+    
+    subgraph "LangChain Framework"
+        C
+        E
+        F
+    end
+    
+    subgraph "Database Layer"
+        G
+        H
+    end
+    
+    subgraph "AI Layer"
+        D
+    end
+    
+    subgraph "UI Layer"
+        B
+    end
+    
+    style A fill:#e1f5fe
+    style B fill:#f3e5f5
+    style C fill:#fff3e0
+    style D fill:#e8f5e8
+    style H fill:#fce4ec
+```
 
 ### Core Components
 
