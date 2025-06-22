@@ -1,13 +1,15 @@
 import sqlite3
+from dotenv import load_dotenv
 
 import requests
 from langchain_community.utilities.sql_database import SQLDatabase
 from sqlalchemy import create_engine
 from sqlalchemy.pool import StaticPool
-import getpass
 import os
 from langchain.chat_models import init_chat_model
 from langchain_community.agent_toolkits.sql.toolkit import SQLDatabaseToolkit
+
+load_dotenv()
 
 
 def get_engine_for_chinook_db():
@@ -26,15 +28,12 @@ db = SQLDatabase(engine)
 
 
 if not os.environ.get("GOOGLE_API_KEY"):
-  os.environ["GOOGLE_API_KEY"] = getpass.getpass("Enter API key for Google Gemini: ")
+    raise EnvironmentError("GOOGLE_API_KEY not found in environment. Please set it in your .env file.")
 
 llm = init_chat_model("gemini-2.0-flash", model_provider="google_genai")
 
-
-
 toolkit = SQLDatabaseToolkit(db=db, llm=llm)
-print(toolkit,"Toolkit")
-
+print(toolkit, "Toolkit")
 
 toolkit.get_tools()
 
@@ -44,7 +43,6 @@ prompt_template = hub.pull("langchain-ai/sql-agent-system-prompt")
 
 assert len(prompt_template.messages) == 1
 print(prompt_template.input_variables)
-
 
 system_message = prompt_template.format(dialect="SQLite", top_k=5)
 
